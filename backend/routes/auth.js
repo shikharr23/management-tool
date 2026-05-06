@@ -33,7 +33,7 @@ authRouter.post("/register", async (req, res) => {
     const newUser = new User({ name, email, password: hashedPassword });
     await newUser.save();
     const token = jwt.sign(
-      { userId: newUser._id },
+      { id: newUser._id },
       process.env.JWT_SECRET,
       { expiresIn: "1h" },
     );
@@ -59,7 +59,7 @@ authRouter.post("/login", async (req, res) => {
       return res.status(400).json({ error: "Password is incorrect" });
     }
     const token = jwt.sign(
-      { userId: existingUser._id },
+      { id: existingUser._id },
       process.env.JWT_SECRET,
       { expiresIn: "1h" },
     );
