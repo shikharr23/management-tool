@@ -37,7 +37,7 @@ authRouter.post("/register", async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "1h" },
     );
-    res.status(201).json({ token });
+    res.status(201).json({ token , message : "User added successfully!"  });
   } catch (error) {
     res.status(500).json({ error: "Server error" });
   }

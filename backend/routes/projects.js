@@ -6,7 +6,7 @@ import { z } from "zod";
 const projectSchema = z.object({
   name: z.string().min(3),
   description: z.string(),
-  deadline: z.coerce().date(),
+  deadline: z.coerce.date(),
 });
 
 const projectRoute = express.Router();
