@@ -1,12 +1,16 @@
 import express from "express";
 import Project from "../models/Project.js";
+import Task from "../models/Task.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import { z } from "zod";
 
 const projectSchema = z.object({
   name: z.string().min(3),
-  description: z.string(),
-  deadline: z.coerce.date(),
+  description: z.string().optional().default(""),
+  deadline: z.preprocess(
+    (val) => (val === "" || val === null ? undefined : val),
+    z.coerce.date().optional()
+  ),
 });
 
 const projectRoute = express.Router();
@@ -89,6 +93,7 @@ projectRoute.delete("/:id", authMiddleware, async (req, res) => {
     if (project.user.toString() !== req.user.id) {
       return res.status(403).json({ error: "Not authorized" });
     }
+    await Task.deleteMany({ project: req.params.id });
     await Project.findByIdAndDelete(req.params.id);
     res.status(200).json({ message: "Project deleted" });
   } catch (err) {

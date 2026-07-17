@@ -7,11 +7,14 @@ import { z } from "zod";
 
 const taskSchema = z.object({
   title: z.string().min(1, "Title is required"),
-  description: z.string().optional(),
+  description: z.string().optional().default(""),
   project: z.string().min(1, "Project ID is required"),
   status: z.enum(["todo", "in-progress", "completed"]).default("todo"),
   priority: z.enum(["low", "medium", "high"]).default("medium"),
-  dueDate: z.coerce.date().optional(),
+  dueDate: z.preprocess(
+    (val) => (val === "" || val === null ? undefined : val),
+    z.coerce.date().optional()
+  ),
 });
 
 const taskRoute = express.Router();
@@ -21,9 +24,22 @@ taskRoute.get("/", authMiddleware, async (req, res) => {
   try {
     const userProjects = await Project.find({ user: req.user.id });
     const projectIds = userProjects.map((p) => p._id);
-    const tasks = await Task.find({ project: { $in: projectIds } }).populate(
-      "project"
-    );
+    const { projectId } = req.query;
+
+    if (projectId) {
+      const ownsProject = projectIds.some(
+        (id) => id.toString() === projectId
+      );
+      if (!ownsProject) {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+    }
+
+    const filter = projectId
+      ? { project: projectId }
+      : { project: { $in: projectIds } };
+
+    const tasks = await Task.find(filter).populate("project");
     res.status(200).json(tasks);
   } catch (err) {
     res.status(500).json({ error: err.message });
