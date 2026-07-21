@@ -31,11 +31,18 @@ authRouter.post("/register", async (req, res) => {
       return res.status(400).json({ error: "Email already in use" });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ name, email, password: hashedPassword });
+    const newUser = new User({
+      email,
+      password: hashedPassword,
+      profile: {
+        username: name,
+        role: "user",
+      },
+    });
     await newUser.save();
     const token = jwt.sign(
-      { id: newUser._id },
-      process.env.JWT_SECRET,
+      { id: newUser._id, role: newUser.profile.role },
+      process.env.JWT_SECRET || "development-secret",
       { expiresIn: "1h" },
     );
     res.status(201).json({ token , message : "User added successfully!"  });
@@ -60,8 +67,8 @@ authRouter.post("/login", async (req, res) => {
       return res.status(400).json({ error: "Password is incorrect" });
     }
     const token = jwt.sign(
-      { id: existingUser._id },
-      process.env.JWT_SECRET,
+      { id: existingUser._id, role: existingUser.profile?.role ?? "user" },
+      process.env.JWT_SECRET || "development-secret",
       { expiresIn: "1h" },
     );
 
