@@ -8,23 +8,23 @@ import ProjectDetail from "./pages/ProjectDetail";
 import "./styles/global.css";
 
 function PrivateRoute({ children }) {
-  const { token, loading } = useAuth();
+  const { user, loading } = useAuth();
 
   if (loading) {
     return <div style={{ textAlign: "center", padding: "40px" }}>Loading...</div>;
   }
 
-  return token ? children : <Navigate to="/login" replace />;
+  return user ? children : <Navigate to="/login" replace />;
 }
 
 function PublicRoute({ children }) {
-  const { token, loading } = useAuth();
+  const { user, loading } = useAuth();
 
   if (loading) {
     return <div style={{ textAlign: "center", padding: "40px" }}>Loading...</div>;
   }
 
-  return token ? <Navigate to="/dashboard" replace /> : children;
+  return user ? <Navigate to="/dashboard" replace /> : children;
 }
 
 function App() {

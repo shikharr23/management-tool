@@ -18,7 +18,7 @@ export default function Login() {
 
     try {
       const response = await authService.login(email, password);
-      login(response.token);
+      await login(response.accessToken);
       navigate("/dashboard");
     } catch (err) {
       setError(err.message);

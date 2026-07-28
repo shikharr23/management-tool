@@ -1,59 +1,75 @@
 import { createContext, useState, useEffect, useCallback } from "react";
-import { authService, setUnauthorizedHandler } from "../services/api";
+import { authService, setUnauthorizedHandler, setAccessToken } from "../services/api";
 
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("token"));
   const [loading, setLoading] = useState(true);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem("token");
-    setToken(null);
-    setUser(null);
+  const logout = useCallback(async () => {
+    try {
+      await authService.logout();
+    } catch {
+      // ignore errors during logout
+    } finally {
+      setAccessToken(null);
+      setUser(null);
+    }
   }, []);
 
   useEffect(() => {
-    setUnauthorizedHandler(logout);
+    setUnauthorizedHandler(() => {
+      setAccessToken(null);
+      setUser(null);
+    });
     return () => setUnauthorizedHandler(null);
-  }, [logout]);
+  }, []);
+
+  const fetchUser = useCallback(async (cancelled = false) => {
+    try {
+      const userData = await authService.getMe();
+      if (!cancelled) setUser(userData);
+    } catch {
+      if (!cancelled) setUser(null);
+    } finally {
+      if (!cancelled) setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
 
-    const loadUser = async () => {
-      if (!token) {
-        setUser(null);
-        setLoading(false);
-        return;
-      }
-
+    const initializeAuth = async () => {
       try {
-        const userData = await authService.getMe();
-        if (!cancelled) setUser(userData);
+        // Try to silently refresh token on app mount using httpOnly cookie
+        const { accessToken } = await authService.refresh();
+        setAccessToken(accessToken);
+        await fetchUser(cancelled);
       } catch {
-        if (!cancelled) logout();
-      } finally {
-        if (!cancelled) setLoading(false);
+        // No valid refresh token cookie exists
+        if (!cancelled) {
+          setUser(null);
+          setLoading(false);
+        }
       }
     };
-
+    
     setLoading(true);
-    loadUser();
+    initializeAuth();
 
     return () => {
       cancelled = true;
     };
-  }, [token, logout]);
+  }, [fetchUser]);
 
-  const login = (newToken) => {
-    localStorage.setItem("token", newToken);
-    setToken(newToken);
+  const login = async (newToken) => {
+    setAccessToken(newToken);
+    await fetchUser();
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

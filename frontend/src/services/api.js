@@ -1,33 +1,96 @@
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 let unauthorizedHandler = null;
+let accessToken = null;
+let isRefreshing = false;
+let failedQueue = [];
 
 export const setUnauthorizedHandler = (handler) => {
   unauthorizedHandler = handler;
 };
 
+export const setAccessToken = (token) => {
+  accessToken = token;
+};
+
+export const getAccessToken = () => accessToken;
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
 const parseErrorMessage = (data) => {
   if (typeof data.error === "string") return data.error;
-  if (Array.isArray(data.error)) return data.error[0]?.message || "API Error";
-  if (data.msg) return data.msg;
+  if(typeof data.message === "string") return data.message;
+  if (Array.isArray(data.error)) return data.error[0]?.message || "Validation Error";
+  if (typeof data.msg === "string") return data.msg;
   return "API Error";
 };
 
 export const apiCall = async (endpoint, options = {}) => {
-  const token = localStorage.getItem("token");
   const headers = {
     "Content-Type": "application/json",
-    ...(token && { Authorization: `Bearer ${token}` }),
+    ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
     ...options.headers,
   };
 
   const response = await fetch(`${API_BASE}${endpoint}`, {
     ...options,
     headers,
+    credentials: "include",
   });
 
+  if (response.status === 401 && endpoint !== "/auth/refresh" && endpoint !== "/auth/login") {
+    if (isRefreshing) {
+      return new Promise((resolve, reject) => {
+        failedQueue.push({ resolve, reject });
+      })
+        .then((token) => {
+          return apiCall(endpoint, {
+            ...options,
+            headers: { ...options.headers, Authorization: `Bearer ${token}` },
+          });
+        })
+        .catch((err) => Promise.reject(err));
+    }
+
+    isRefreshing = true;
+
+    try {
+      const refreshResponse = await fetch(`${API_BASE}/auth/refresh`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (!refreshResponse.ok) {
+        throw new Error("Session expired");
+      }
+
+      const { accessToken: newAccessToken } = await refreshResponse.json();
+      setAccessToken(newAccessToken);
+      processQueue(null, newAccessToken);
+
+      // Retry original request
+      return apiCall(endpoint, options);
+    } catch (err) {
+      processQueue(err, null);
+      setAccessToken(null);
+      unauthorizedHandler?.();
+      throw new Error("Session expired. Please log in again.");
+    } finally {
+      isRefreshing = false;
+    }
+  }
+
   if (response.status === 401) {
-    localStorage.removeItem("token");
+    setAccessToken(null);
     unauthorizedHandler?.();
     throw new Error("Session expired. Please log in again.");
   }
@@ -53,6 +116,8 @@ export const authService = {
       method: "POST",
       body: JSON.stringify({ email, password }),
     }),
+  refresh: () => apiCall("/auth/refresh", { method: "POST" }),
+  logout: () => apiCall("/auth/logout", { method: "POST" }),
   getMe: () => apiCall("/auth/me"),
 };
 

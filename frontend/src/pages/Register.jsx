@@ -19,7 +19,7 @@ export default function Register() {
 
     try {
       const response = await authService.register(name, email, password);
-      login(response.token);
+      await login(response.accessToken);
       navigate("/dashboard");
     } catch (err) {
       setError(err.message);
