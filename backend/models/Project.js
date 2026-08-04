@@ -42,5 +42,13 @@ const projectSchema = new mongoose.Schema(
   },
 );
 
+// --- Indexes ---
+// Speeds up "find all projects owned by user X"
+projectSchema.index({ owner: 1 });
+
+// Multikey index — MongoDB indexes each element of the members array
+// Speeds up "find all projects where user X is a member"
+projectSchema.index({ "members.user": 1 });
+
 const Project = mongoose.model("Project", projectSchema);
 export default Project;

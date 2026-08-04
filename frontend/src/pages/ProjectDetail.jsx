@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { projectService, taskService } from "../services/api";
 import Navbar from "../components/Navbar";
 import KanbanBoard from "../components/KanbanBoard";
+import TaskDetailModal from "../components/TaskDetailModal";
 
 const emptyTaskForm = {
   title: "",
@@ -21,15 +22,23 @@ export default function ProjectDetail() {
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [formData, setFormData] = useState(emptyTaskForm);
+  const [viewingTask, setViewingTask] = useState(null);
+
+  const handleViewTask = (task) => {
+    setViewingTask(task);
+  };
 
   const fetchProjectAndTasks = useCallback(async () => {
     try {
-      const [projectData, projectTasks] = await Promise.all([
+      const [projectData, taskResponse] = await Promise.all([
         projectService.getById(projectId),
-        taskService.getAll(projectId),
+        // Kanban board needs all tasks — use a high limit
+        // For a paginated list view, you'd use a lower limit and handle pages
+        taskService.getAll({ projectId, limit: 200 }),
       ]);
       setProject(projectData);
-      setTasks(projectTasks);
+      // API now returns { tasks: [...], pagination: {...} }
+      setTasks(taskResponse.tasks);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -205,7 +214,15 @@ export default function ProjectDetail() {
           onUpdateTask={handleUpdateTask}
           onDeleteTask={handleDeleteTask}
           onEditTask={handleEditTask}
+          onViewTask={handleViewTask}
         />
+
+        {viewingTask && (
+          <TaskDetailModal
+            task={viewingTask}
+            onClose={() => setViewingTask(null)}
+          />
+        )}
       </div>
     </div>
   );

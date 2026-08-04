@@ -44,5 +44,14 @@ const taskSchema = new mongoose.Schema(
   },
 );
 
+// --- Indexes ---
+// Compound index: most task queries filter by project + status together
+// MongoDB can also use just the first field (project) for project-only queries
+taskSchema.index({ project: 1, status: 1 });
+
+// Single-field indexes for common lookups
+taskSchema.index({ assignedTo: 1 });  // "show me all tasks assigned to user X"
+taskSchema.index({ dueDate: 1 });     // "sort/filter tasks by deadline"
+
 const Task = mongoose.model("Task", taskSchema);
 export default Task;

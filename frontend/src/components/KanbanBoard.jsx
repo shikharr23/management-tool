@@ -18,7 +18,7 @@ const COLUMNS = {
   completed: { title: "Completed", color: "#10b981" },
 };
 
-function KanbanColumn({ status, title, color, tasks, onDeleteTask, onEditTask }) {
+function KanbanColumn({ status, title, color, tasks, onDeleteTask, onEditTask, onViewTask }) {
   const { setNodeRef, isOver } = useDroppable({ id: `column-${status}` });
   const taskIds = tasks.map((t) => String(t._id));
 
@@ -45,6 +45,7 @@ function KanbanColumn({ status, title, color, tasks, onDeleteTask, onEditTask })
                 task={task}
                 onDelete={onDeleteTask}
                 onEdit={onEditTask}
+                onView={onViewTask}
               />
             ))
           )}
@@ -54,7 +55,7 @@ function KanbanColumn({ status, title, color, tasks, onDeleteTask, onEditTask })
   );
 }
 
-export default function KanbanBoard({ tasks, onUpdateTask, onDeleteTask, onEditTask }) {
+export default function KanbanBoard({ tasks, onUpdateTask, onDeleteTask, onEditTask, onViewTask }) {
   const [activeTask, setActiveTask] = useState(null);
 
   const sensors = useSensors(
@@ -121,6 +122,7 @@ export default function KanbanBoard({ tasks, onUpdateTask, onDeleteTask, onEditT
             tasks={getTasksByStatus(status)}
             onDeleteTask={onDeleteTask}
             onEditTask={onEditTask}
+            onViewTask={onViewTask}
           />
         ))}
       </div>

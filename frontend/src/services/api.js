@@ -141,8 +141,25 @@ export const projectService = {
 };
 
 export const taskService = {
-  getAll: (projectId) =>
-    apiCall(projectId ? `/task?projectId=${projectId}` : "/task"),
+  // params: { projectId, page, limit, status, priority, search, sortBy, order }
+  // Returns: { tasks: [...], pagination: { page, limit, total, pages, hasNextPage, hasPrevPage } }
+  getAll: (projectIdOrParams) => {
+    // Backwards compatible: if a plain string is passed, treat it as projectId
+    const params =
+      typeof projectIdOrParams === "string"
+        ? { projectId: projectIdOrParams }
+        : projectIdOrParams || {};
+
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        query.append(key, value);
+      }
+    });
+
+    const queryString = query.toString();
+    return apiCall(`/task${queryString ? `?${queryString}` : ""}`);
+  },
   getById: (id) => apiCall(`/task/${id}`),
   create: (data) =>
     apiCall("/task", {
@@ -157,5 +174,11 @@ export const taskService = {
   delete: (id) =>
     apiCall(`/task/${id}`, {
       method: "DELETE",
+    }),
+  getComments: (id) => apiCall(`/task/${id}/comments`),
+  addComment: (id, text) =>
+    apiCall(`/task/${id}/comments`, {
+      method: "POST",
+      body: JSON.stringify({ text }),
     }),
 };

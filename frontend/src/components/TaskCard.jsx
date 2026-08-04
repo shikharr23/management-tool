@@ -2,7 +2,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { formatDate, getStatusColor, getPriorityColor, isOverdue } from "../utils/helpers";
 
-export default function TaskCard({ task, onDelete, onEdit, isOverlay = false }) {
+export default function TaskCard({ task, onDelete, onEdit, onView, isOverlay = false }) {
   const {
     attributes,
     listeners,
@@ -31,6 +31,11 @@ export default function TaskCard({ task, onDelete, onEdit, isOverlay = false }) 
       ref={isOverlay ? undefined : setNodeRef}
       style={style}
       {...(isOverlay ? {} : { ...attributes, ...listeners })}
+      onClick={() => {
+        if (!isDragging && onView && !isOverlay) {
+          onView(task);
+        }
+      }}
     >
       <div style={styles.header}>
         <h4 style={styles.title}>{task.title}</h4>

@@ -46,5 +46,10 @@ const userSchema = new mongoose.Schema(
   },
 );
 
+// --- Indexes ---
+// Unique index on email — enforces uniqueness at the DB level
+// Also speeds up login lookups (find user by email)
+userSchema.index({ email: 1 }, { unique: true });
+
 const User = mongoose.model("User", userSchema);
 export default User;
