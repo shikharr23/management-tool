@@ -119,6 +119,7 @@ export const authService = {
   refresh: () => apiCall("/auth/refresh", { method: "POST" }),
   logout: () => apiCall("/auth/logout", { method: "POST" }),
   getMe: () => apiCall("/auth/me"),
+  searchUsers: (email) => apiCall(`/auth/search?email=${encodeURIComponent(email)}`),
 };
 
 export const projectService = {
@@ -136,6 +137,21 @@ export const projectService = {
     }),
   delete: (id) =>
     apiCall(`/project/${id}`, {
+      method: "DELETE",
+    }),
+  getMembers: (id) => apiCall(`/project/${id}/members`),
+  addMember: (id, userId, role) =>
+    apiCall(`/project/${id}/members`, {
+      method: "POST",
+      body: JSON.stringify({ userId, role }),
+    }),
+  updateMemberRole: (id, userId, role) =>
+    apiCall(`/project/${id}/members/${userId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ role }),
+    }),
+  removeMember: (id, userId) =>
+    apiCall(`/project/${id}/members/${userId}`, {
       method: "DELETE",
     }),
 };

@@ -100,6 +100,17 @@ authRouter.get("/me", authMiddleware, async (req, res) => {
   res.status(200).json(user);
 });
 
+authRouter.get("/search", authMiddleware, async (req, res) => {
+  const { email } = req.query;
+  if (!email) {
+    return res.status(200).json([]);
+  }
+  const users = await User.find({ 
+    email: { $regex: email, $options: "i" } 
+  }).select("email profile.username profile.avatar _id").limit(5);
+  res.status(200).json(users);
+});
+
 authRouter.post("/refresh", async (req, res) => {
   const refreshToken = req.cookies?.refreshToken;
   if (!refreshToken) {
@@ -117,10 +128,10 @@ authRouter.post("/refresh", async (req, res) => {
       throw new CustomError("Invalid refresh token", 401);
     }
 
-    // Generate new tokens (rotate refresh token for security)
+    // Generate new tokens
     const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
     
-    // Replace old refresh token with new one in DB
+    // Replace old refresh token with new one
     user.refreshTokens = user.refreshTokens.filter((t) => t !== refreshToken);
     user.refreshTokens.push(newRefreshToken);
     await user.save();
