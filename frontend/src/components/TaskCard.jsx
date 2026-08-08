@@ -86,6 +86,11 @@ export default function TaskCard({ task, onDelete, onEdit, onView, isOverlay = f
         >
           {task.priority}
         </span>
+        {task.assignedTo && (
+          <span style={styles.assigneeBadge} title="Assigned Member">
+            👤 {(task.assignedTo.email || task.assignedTo.profile?.username || "Assigned").split("@")[0]}
+          </span>
+        )}
       </div>
       <p style={{ ...styles.dueDate, ...(overdue ? styles.overdueText : {}) }}>
         {formatDate(task.dueDate)}
@@ -151,6 +156,18 @@ const styles = {
     fontSize: "11px",
     fontWeight: "700",
     textTransform: "capitalize",
+  },
+  assigneeBadge: {
+    backgroundColor: "#f3f4f6",
+    color: "#374151",
+    padding: "4px 8px",
+    borderRadius: "4px",
+    fontSize: "11px",
+    fontWeight: "600",
+    border: "1px solid #e5e7eb",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "4px",
   },
   dueDate: {
     fontSize: "12px",

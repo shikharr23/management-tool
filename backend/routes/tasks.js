@@ -83,7 +83,8 @@ taskRoute.get("/", authMiddleware, async (req, res) => {
       .sort(sort)
       .skip(skip)
       .limit(limitNum)
-      .populate("project"),
+      .populate("project")
+      .populate("assignedTo", "email profile.username profile.avatar"),
     Task.countDocuments(filter),
   ]);
 
