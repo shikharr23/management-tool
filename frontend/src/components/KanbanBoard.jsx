@@ -9,7 +9,11 @@ import {
   useDroppable,
   DragOverlay,
 } from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
 import TaskCard from "./TaskCard";
 
 const COLUMNS = {
@@ -55,7 +59,14 @@ function KanbanColumn({ status, title, color, tasks, onDeleteTask, onEditTask, o
   );
 }
 
-export default function KanbanBoard({ tasks, onUpdateTask, onDeleteTask, onEditTask, onViewTask }) {
+export default function KanbanBoard({
+  tasks,
+  onUpdateTask,
+  onReorderTasks,
+  onDeleteTask,
+  onEditTask,
+  onViewTask,
+}) {
   const [activeTask, setActiveTask] = useState(null);
 
   const sensors = useSensors(
@@ -63,7 +74,10 @@ export default function KanbanBoard({ tasks, onUpdateTask, onDeleteTask, onEditT
     useSensor(KeyboardSensor)
   );
 
-  const getTasksByStatus = (status) => tasks.filter((t) => t.status === status);
+  const getTasksByStatus = (status) =>
+    tasks
+      .filter((t) => t.status === status)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   const handleDragStart = (event) => {
     const task = tasks.find((t) => String(t._id) === String(event.active.id));
@@ -76,27 +90,101 @@ export default function KanbanBoard({ tasks, onUpdateTask, onDeleteTask, onEditT
 
     if (!over) return;
 
-    const draggedTask = tasks.find((t) => String(t._id) === String(active.id));
-    if (!draggedTask) return;
-
-    let newStatus = null;
+    const activeId = String(active.id);
     const overId = String(over.id);
 
+    const draggedTask = tasks.find((t) => String(t._id) === activeId);
+    if (!draggedTask) return;
+
+    const sourceStatus = draggedTask.status;
+
+    let destinationStatus = null;
+    let targetTask = null;
+
     if (overId.startsWith("column-")) {
-      newStatus = overId.replace("column-", "");
+      destinationStatus = overId.replace("column-", "");
     } else {
-      const overTask = tasks.find((t) => String(t._id) === overId);
-      if (overTask) {
-        newStatus = overTask.status;
+      targetTask = tasks.find((t) => String(t._id) === overId);
+      if (targetTask) {
+        destinationStatus = targetTask.status;
       }
     }
 
-    if (
-      newStatus &&
-      Object.keys(COLUMNS).includes(newStatus) &&
-      draggedTask.status !== newStatus
-    ) {
-      onUpdateTask(draggedTask._id, { status: newStatus });
+    if (!destinationStatus || !COLUMNS[destinationStatus]) return;
+
+    // Case 1: Reordering within the same column
+    if (sourceStatus === destinationStatus) {
+      const columnTasks = getTasksByStatus(sourceStatus);
+      const oldIndex = columnTasks.findIndex((t) => String(t._id) === activeId);
+      const newIndex = targetTask
+        ? columnTasks.findIndex((t) => String(t._id) === overId)
+        : columnTasks.length - 1;
+
+      if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
+        return;
+      }
+
+      const reorderedColumnTasks = arrayMove(columnTasks, oldIndex, newIndex);
+      const updates = reorderedColumnTasks.map((t, index) => ({
+        _id: t._id,
+        status: sourceStatus,
+        order: index,
+      }));
+
+      if (onReorderTasks) {
+        onReorderTasks(updates);
+      } else if (onUpdateTask) {
+        onUpdateTask(draggedTask._id, { order: newIndex });
+      }
+      return;
+    }
+
+    // Case 2: Moving across columns
+    const sourceColumnTasks = getTasksByStatus(sourceStatus).filter(
+      (t) => String(t._id) !== activeId
+    );
+    const destColumnTasks = getTasksByStatus(destinationStatus);
+
+    let targetIndex = destColumnTasks.length;
+    if (targetTask) {
+      const overIndex = destColumnTasks.findIndex((t) => String(t._id) === overId);
+      if (overIndex !== -1) {
+        targetIndex = overIndex;
+      }
+    }
+
+    const updatedDraggedTask = {
+      ...draggedTask,
+      status: destinationStatus,
+    };
+
+    const newDestColumnTasks = [
+      ...destColumnTasks.slice(0, targetIndex),
+      updatedDraggedTask,
+      ...destColumnTasks.slice(targetIndex),
+    ];
+
+    const sourceUpdates = sourceColumnTasks.map((t, index) => ({
+      _id: t._id,
+      status: sourceStatus,
+      order: index,
+    }));
+
+    const destUpdates = newDestColumnTasks.map((t, index) => ({
+      _id: t._id,
+      status: destinationStatus,
+      order: index,
+    }));
+
+    const updates = [...sourceUpdates, ...destUpdates];
+
+    if (onReorderTasks) {
+      onReorderTasks(updates);
+    } else if (onUpdateTask) {
+      onUpdateTask(draggedTask._id, {
+        status: destinationStatus,
+        order: targetIndex,
+      });
     }
   };
 

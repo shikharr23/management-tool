@@ -43,7 +43,7 @@ export default function ProjectDetail() {
     try {
       const [projectData, taskResponse, membersResponse] = await Promise.all([
         projectService.getById(projectId),
-        taskService.getAll({ projectId, limit: 200 }),
+        taskService.getAll({ projectId, limit: 200, sortBy: "order", order: "asc" }),
         projectService.getMembers(projectId).catch(() => ({ members: [] })),
       ]);
       setProject(projectData);
@@ -98,6 +98,27 @@ export default function ProjectDetail() {
       fetchProjectAndTasks();
     } catch (err) {
       setError(err.message);
+    }
+  };
+
+  const handleReorderTasks = async (updates) => {
+    setTasks((prevTasks) => {
+      const updateMap = new Map(updates.map((u) => [String(u._id), u]));
+      return prevTasks
+        .map((task) => {
+          const update = updateMap.get(String(task._id));
+          return update
+            ? { ...task, status: update.status, order: update.order }
+            : task;
+        })
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    });
+
+    try {
+      await taskService.reorder(projectId, updates);
+    } catch (err) {
+      setError(err.message);
+      fetchProjectAndTasks();
     }
   };
 
@@ -319,6 +340,7 @@ export default function ProjectDetail() {
           <KanbanBoard
             tasks={filteredTasks}
             onUpdateTask={handleUpdateTask}
+            onReorderTasks={handleReorderTasks}
             onDeleteTask={handleDeleteTask}
             onEditTask={handleEditTask}
             onViewTask={handleViewTask}

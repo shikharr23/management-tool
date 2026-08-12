@@ -26,42 +26,48 @@ export function AuthProvider({ children }) {
     return () => setUnauthorizedHandler(null);
   }, []);
 
-  const fetchUser = useCallback(async (cancelled = false) => {
+  const fetchUser = useCallback(async () => {
     try {
       const userData = await authService.getMe();
-      if (!cancelled) setUser(userData);
+      setUser(userData);
+      return userData;
     } catch {
-      if (!cancelled) setUser(null);
+      setUser(null);
+      return null;
     } finally {
-      if (!cancelled) setLoading(false);
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
+    let isMounted = true;
 
     const initializeAuth = async () => {
       try {
         // Try to silently refresh token on app mount using httpOnly cookie
-        const { accessToken } = await authService.refresh();
-        setAccessToken(accessToken);
-        await fetchUser(cancelled);
-      } catch {
-        // No valid refresh token cookie exists
-        if (!cancelled) {
-          setUser(null);
-          setLoading(false);
+        const res = await authService.refresh();
+        if (res && res.accessToken) {
+          setAccessToken(res.accessToken);
+          const userData = await authService.getMe();
+          if (isMounted) {
+            setUser(userData);
+          }
+        } else {
+          if (isMounted) setUser(null);
         }
+      } catch {
+        if (isMounted) setUser(null);
+      } finally {
+        if (isMounted) setLoading(false);
       }
     };
-    
-    setLoading(true);
+
     initializeAuth();
 
     return () => {
-      cancelled = true;
+      isMounted = false;
     };
-  }, [fetchUser]);
+  }, []);
 
   const login = async (newToken) => {
     setAccessToken(newToken);

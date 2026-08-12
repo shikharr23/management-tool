@@ -17,6 +17,20 @@ const taskSchema = z.object({
     (val) => (val === "" || val === null ? undefined : val),
     z.coerce.date().optional()
   ),
+  order: z.number().optional(),
+});
+
+const reorderSchema = z.object({
+  projectId: z.string().min(1, "Project ID is required"),
+  tasks: z
+    .array(
+      z.object({
+        _id: z.string().min(1, "Task ID is required"),
+        status: z.enum(["todo", "in-progress", "completed", "review"]),
+        order: z.number(),
+      })
+    )
+    .min(1, "At least one task is required"),
 });
 
 const taskRoute = express.Router();
@@ -31,8 +45,8 @@ taskRoute.get("/", authMiddleware, async (req, res) => {
     priority,
     search,
     projectId,
-    sortBy = "createdAt",  // default sort field
-    order = "desc",         // default newest first
+    sortBy = projectId ? "order" : "createdAt",  // default sort by board order if projectId provided
+    order = projectId && !req.query.sortBy ? "asc" : "desc", // default ascending for board order
   } = req.query;
 
   // Sanitise page/limit to prevent nonsense values
@@ -68,10 +82,10 @@ taskRoute.get("/", authMiddleware, async (req, res) => {
   }
 
   // ---- 4. Build sort object ----
-  const allowedSortFields = ["createdAt", "updatedAt", "dueDate", "priority", "status", "title"];
+  const allowedSortFields = ["createdAt", "updatedAt", "dueDate", "priority", "status", "title", "order"];
   const sortField = allowedSortFields.includes(sortBy) ? sortBy : "createdAt";
   const sortOrder = order === "asc" ? 1 : -1;
-  const sort = { [sortField]: sortOrder };
+  const sort = sortField === "order" ? { order: sortOrder, createdAt: 1 } : { [sortField]: sortOrder };
 
   // ---- 5. Execute query + count in PARALLEL ----
   // This is a key optimisation: instead of running them sequentially
@@ -137,13 +151,60 @@ taskRoute.post("/", authMiddleware, async (req, res) => {
     }
   }
 
+  // Calculate order if not provided: put new task at the end of the column
+  let taskOrder = validated.data.order;
+  if (taskOrder === undefined) {
+    const highestTask = await Task.findOne({
+      project: validated.data.project,
+      status: validated.data.status,
+    })
+      .sort({ order: -1 })
+      .select("order");
+    taskOrder = highestTask && typeof highestTask.order === "number" ? highestTask.order + 1 : 0;
+  }
+
   const task = new Task({
     ...validated.data,
+    order: taskOrder,
     createdBy: req.user.id,
   });
   await task.save();
   await task.populate("project createdBy assignedTo");
   res.status(201).json(task);
+});
+
+// PATCH /api/task/reorder - batch update tasks ordering & statuses
+taskRoute.patch("/reorder", authMiddleware, async (req, res) => {
+  const validated = reorderSchema.safeParse(req.body);
+  if (!validated.success) {
+    throw new CustomError(validated.error.message, 400);
+  }
+
+  const { projectId, tasks } = validated.data;
+  const access = await resolveProjectAccess(projectId, req.user.id);
+  if (!access.project) {
+    throw new CustomError("Project not found", 404);
+  }
+  if (
+    req.user.role !== "admin" &&
+    (!access.isMember || (access.role !== "owner" && access.role !== "projectManager"))
+  ) {
+    throw new CustomError("Not authorized", 403);
+  }
+
+  const bulkOps = tasks.map((t) => ({
+    updateOne: {
+      filter: { _id: t._id, project: projectId },
+      update: { $set: { status: t.status, order: t.order } },
+    },
+  }));
+
+  await Task.bulkWrite(bulkOps);
+
+  res.status(200).json({
+    message: "Tasks reordered successfully",
+    updatedCount: tasks.length,
+  });
 });
 
 taskRoute.patch("/:id", authMiddleware, async (req, res) => {

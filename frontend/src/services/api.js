@@ -197,4 +197,9 @@ export const taskService = {
       method: "POST",
       body: JSON.stringify({ text }),
     }),
+  reorder: (projectId, tasks) =>
+    apiCall("/task/reorder", {
+      method: "PATCH",
+      body: JSON.stringify({ projectId, tasks }),
+    }),
 };
