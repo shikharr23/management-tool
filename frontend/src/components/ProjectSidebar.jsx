@@ -30,81 +30,94 @@ export default function ProjectSidebar({
   };
 
   return (
-    <aside style={{ ...styles.sidebar, width: isOpen ? "320px" : "0px", opacity: isOpen ? 1 : 0 }}>
-      <div style={styles.container}>
+    <aside
+      className={`bg-white border-l border-gray-200 h-[calc(100vh-70px)] sticky top-[70px] overflow-y-auto transition-all duration-300 ease-in-out shadow-xs shrink-0 ${
+        isOpen ? "w-80 opacity-100" : "w-0 opacity-0 pointer-events-none"
+      }`}
+    >
+      <div className="p-5 flex flex-col gap-4.5 min-w-[320px]">
         {/* Toggle / Header */}
-        <div style={styles.header}>
-          <div style={styles.headerTitleWrap}>
-            <span style={styles.headerIcon}>📊</span>
-            <h3 style={styles.headerTitle}>Project Hub</h3>
+        <div className="flex justify-between items-center pb-2.5 border-b border-gray-100">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">📊</span>
+            <h3 className="m-0 text-base font-bold text-gray-900">Project Hub</h3>
           </div>
-          <button onClick={onToggle} style={styles.closeBtn} title="Close Sidebar">
+          <button
+            type="button"
+            onClick={onToggle}
+            className="bg-transparent border-none text-[22px] cursor-pointer text-gray-400 hover:text-gray-700 leading-none p-1"
+            title="Close Sidebar"
+          >
             &times;
           </button>
         </div>
 
         {/* Quick Progress Analytics Card */}
-        <div style={styles.card}>
-          <div style={styles.progressHeader}>
-            <span style={styles.cardLabel}>Progress</span>
-            <span style={styles.progressValue}>{progressPercent}%</span>
+        <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 flex flex-col gap-3">
+          <div className="flex justify-between items-center">
+            <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Progress</span>
+            <span className="text-base font-bold text-gray-900">{progressPercent}%</span>
           </div>
-          <div style={styles.progressBarBg}>
+          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
             <div
-              style={{
-                ...styles.progressBarFill,
-                width: `${progressPercent}%`,
-              }}
+              className="h-full bg-emerald-500 rounded-full transition-all duration-400 ease-out"
+              style={{ width: `${progressPercent}%` }}
             />
           </div>
-          <div style={styles.statsGrid}>
-            <div style={styles.statBox}>
-              <span style={styles.statNum}>{totalTasks}</span>
-              <span style={styles.statSub}>Total</span>
+          <div className="grid grid-cols-3 gap-2 mt-1">
+            <div className="bg-white border border-gray-200 rounded-lg p-2 text-center flex flex-col">
+              <span className="text-base font-bold text-gray-900">{totalTasks}</span>
+              <span className="text-[11px] text-gray-500">Total</span>
             </div>
-            <div style={styles.statBox}>
-              <span style={{ ...styles.statNum, color: "#10b981" }}>{completedTasks}</span>
-              <span style={styles.statSub}>Done</span>
+            <div className="bg-white border border-gray-200 rounded-lg p-2 text-center flex flex-col">
+              <span className="text-base font-bold text-emerald-500">{completedTasks}</span>
+              <span className="text-[11px] text-gray-500">Done</span>
             </div>
-            <div style={styles.statBox}>
-              <span style={{ ...styles.statNum, color: overdueCount > 0 ? "#ef4444" : "#666" }}>
+            <div className="bg-white border border-gray-200 rounded-lg p-2 text-center flex flex-col">
+              <span className={`text-base font-bold ${overdueCount > 0 ? "text-red-500" : "text-gray-600"}`}>
                 {overdueCount}
               </span>
-              <span style={styles.statSub}>Overdue</span>
+              <span className="text-[11px] text-gray-500">Overdue</span>
             </div>
           </div>
         </div>
 
         {/* Task Search & Filter Controls */}
-        <div style={styles.card}>
-          <span style={styles.cardLabel}>Search & Filters</span>
-          <div style={styles.searchBox}>
-            <span style={styles.searchIcon}>🔍</span>
+        <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 flex flex-col gap-3">
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Search & Filters</span>
+          <div className="flex items-center bg-white border border-gray-300 rounded-lg py-1.5 px-2.5 gap-2">
+            <span className="text-[13px] text-gray-400">🔍</span>
             <input
               type="text"
               placeholder="Search tasks..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              style={styles.searchInput}
+              className="border-none outline-none w-full text-[13px] bg-transparent text-gray-900"
             />
             {searchQuery && (
-              <button onClick={() => onSearchChange("")} style={styles.clearSearchBtn}>
+              <button
+                type="button"
+                onClick={() => onSearchChange("")}
+                className="bg-transparent border-none text-gray-400 hover:text-gray-600 cursor-pointer text-base p-0"
+              >
                 &times;
               </button>
             )}
           </div>
 
-          <div style={styles.priorityFilterWrap}>
-            <span style={styles.subLabel}>Priority:</span>
-            <div style={styles.pillGroup}>
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[11px] font-semibold text-gray-500">Priority:</span>
+            <div className="flex gap-1.5 flex-wrap">
               {priorities.map((p) => (
                 <button
+                  type="button"
                   key={p}
                   onClick={() => onSelectPriority(p)}
-                  style={{
-                    ...styles.pillBtn,
-                    ...(selectedPriority === p ? styles.activePill : {}),
-                  }}
+                  className={`py-1 px-2.5 text-xs rounded-full border cursor-pointer capitalize transition-all ${
+                    selectedPriority === p
+                      ? "bg-gray-900 text-white border-gray-900 font-semibold"
+                      : "border-gray-200 bg-white text-gray-600 hover:bg-gray-100"
+                  }`}
                 >
                   {p}
                 </button>
@@ -114,31 +127,36 @@ export default function ProjectSidebar({
         </div>
 
         {/* Team Members Section */}
-        <div style={styles.card}>
-          <div style={styles.teamHeader}>
-            <div style={styles.teamTitleWrap}>
-              <span style={styles.cardLabel}>Team Members</span>
-              <span style={styles.memberBadge}>{members.length}</span>
+        <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 flex flex-col gap-3">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Team Members</span>
+              <span className="text-[11px] font-bold bg-gray-200 text-gray-700 py-px px-2 rounded-full">{members.length}</span>
             </div>
-            <button onClick={onOpenManageMembers} style={styles.manageTeamBtn}>
+            <button
+              type="button"
+              onClick={onOpenManageMembers}
+              className="bg-transparent border-none text-blue-600 hover:text-blue-800 text-xs font-semibold cursor-pointer p-0"
+            >
               + Manage
             </button>
           </div>
 
-          <p style={styles.teamHint}>Click a member to filter board tasks</p>
+          <p className="text-[11px] text-gray-400 -mt-1.5 m-0">Click a member to filter board tasks</p>
 
-          <div style={styles.membersList}>
+          <div className="flex flex-col gap-1.5 max-h-[260px] overflow-y-auto">
             <div
               onClick={() => onSelectAssignee(null)}
-              style={{
-                ...styles.memberRow,
-                ...(selectedAssignee === null ? styles.activeMemberRow : {}),
-              }}
+              className={`flex items-center gap-2.5 p-2 rounded-lg border cursor-pointer transition-all ${
+                selectedAssignee === null
+                  ? "bg-blue-50 border-blue-300"
+                  : "bg-white border-gray-100 hover:bg-gray-100"
+              }`}
             >
-              <div style={styles.allAvatar}>👥</div>
-              <div style={styles.memberMeta}>
-                <span style={styles.memberName}>All Team Tasks</span>
-                <span style={styles.memberSub}>Show all {totalTasks} tasks</span>
+              <div className="w-8 h-8 rounded-full bg-gray-100 text-sm flex items-center justify-center shrink-0">👥</div>
+              <div className="flex flex-col flex-1 min-w-0">
+                <span className="text-[13px] font-semibold text-gray-900 truncate">All Team Tasks</span>
+                <span className="text-[11px] text-gray-500">Show all {totalTasks} tasks</span>
               </div>
             </div>
 
@@ -155,27 +173,31 @@ export default function ProjectSidebar({
                 <div
                   key={u._id || u}
                   onClick={() => onSelectAssignee(isSelected ? null : u._id || u)}
-                  style={{
-                    ...styles.memberRow,
-                    ...(isSelected ? styles.activeMemberRow : {}),
-                  }}
+                  className={`flex items-center gap-2.5 p-2 rounded-lg border cursor-pointer transition-all ${
+                    isSelected
+                      ? "bg-blue-50 border-blue-300"
+                      : "bg-white border-gray-100 hover:bg-gray-100"
+                  }`}
                 >
-                  <div style={styles.avatar}>{getInitials(email)}</div>
-                  <div style={styles.memberMeta}>
-                    <div style={styles.memberNameRow}>
-                      <span style={styles.memberName} title={email}>
+                  <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center shrink-0">
+                    {getInitials(email)}
+                  </div>
+                  <div className="flex flex-col flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-[13px] font-semibold text-gray-900 truncate" title={email}>
                         {email.split("@")[0]}
                       </span>
                       <span
-                        style={{
-                          ...styles.roleTag,
-                          ...(role === "projectManager" ? styles.pmRoleTag : {}),
-                        }}
+                        className={`text-[10px] py-px px-1.5 rounded font-semibold ${
+                          role === "projectManager"
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-gray-100 text-gray-500"
+                        }`}
                       >
                         {role === "projectManager" ? "PM" : "Member"}
                       </span>
                     </div>
-                    <span style={styles.memberSub}>
+                    <span className="text-[11px] text-gray-500">
                       {userTaskCount} {userTaskCount === 1 ? "task" : "tasks"} assigned
                     </span>
                   </div>
@@ -188,290 +210,3 @@ export default function ProjectSidebar({
     </aside>
   );
 }
-
-const styles = {
-  sidebar: {
-    backgroundColor: "#ffffff",
-    borderLeft: "1px solid #e5e7eb",
-    height: "calc(100vh - 70px)",
-    position: "sticky",
-    top: "70px",
-    overflowY: "auto",
-    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-    boxShadow: "-2px 0 10px rgba(0,0,0,0.03)",
-    flexShrink: 0,
-  },
-  container: {
-    padding: "20px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "18px",
-    minWidth: "320px",
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingBottom: "10px",
-    borderBottom: "1px solid #f3f4f6",
-  },
-  headerTitleWrap: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-  },
-  headerIcon: {
-    fontSize: "18px",
-  },
-  headerTitle: {
-    margin: 0,
-    fontSize: "16px",
-    fontWeight: "700",
-    color: "#111827",
-  },
-  closeBtn: {
-    background: "transparent",
-    border: "none",
-    fontSize: "22px",
-    cursor: "pointer",
-    color: "#9ca3af",
-    lineHeight: 1,
-    padding: "4px",
-  },
-  card: {
-    backgroundColor: "#f9fafb",
-    border: "1px solid #f3f4f6",
-    borderRadius: "12px",
-    padding: "16px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
-  },
-  cardLabel: {
-    fontSize: "12px",
-    fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: "0.05em",
-    color: "#6b7280",
-  },
-  progressHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  progressValue: {
-    fontSize: "16px",
-    fontWeight: "700",
-    color: "#111827",
-  },
-  progressBarBg: {
-    height: "8px",
-    backgroundColor: "#e5e7eb",
-    borderRadius: "999px",
-    overflow: "hidden",
-  },
-  progressBarFill: {
-    height: "100%",
-    backgroundColor: "#10b981",
-    borderRadius: "999px",
-    transition: "width 0.4s ease",
-  },
-  statsGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
-    gap: "8px",
-    marginTop: "4px",
-  },
-  statBox: {
-    backgroundColor: "#ffffff",
-    border: "1px solid #e5e7eb",
-    borderRadius: "8px",
-    padding: "8px",
-    textAlign: "center",
-    display: "flex",
-    flexDirection: "column",
-  },
-  statNum: {
-    fontSize: "16px",
-    fontWeight: "700",
-    color: "#111827",
-  },
-  statSub: {
-    fontSize: "11px",
-    color: "#6b7280",
-  },
-  searchBox: {
-    display: "flex",
-    alignItems: "center",
-    backgroundColor: "#ffffff",
-    border: "1px solid #d1d5db",
-    borderRadius: "8px",
-    padding: "6px 10px",
-    gap: "8px",
-  },
-  searchIcon: {
-    fontSize: "13px",
-    color: "#9ca3af",
-  },
-  searchInput: {
-    border: "none",
-    outline: "none",
-    width: "100%",
-    fontSize: "13px",
-    background: "transparent",
-  },
-  clearSearchBtn: {
-    background: "none",
-    border: "none",
-    color: "#9ca3af",
-    cursor: "pointer",
-    fontSize: "16px",
-    padding: 0,
-  },
-  priorityFilterWrap: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
-  },
-  subLabel: {
-    fontSize: "11px",
-    fontWeight: "600",
-    color: "#6b7280",
-  },
-  pillGroup: {
-    display: "flex",
-    gap: "6px",
-    flexWrap: "wrap",
-  },
-  pillBtn: {
-    padding: "4px 10px",
-    fontSize: "12px",
-    borderRadius: "999px",
-    border: "1px solid #e5e7eb",
-    backgroundColor: "#ffffff",
-    color: "#4b5563",
-    cursor: "pointer",
-    textTransform: "capitalize",
-    transition: "all 0.15s ease",
-  },
-  activePill: {
-    backgroundColor: "#111827",
-    color: "#ffffff",
-    borderColor: "#111827",
-    fontWeight: "600",
-  },
-  teamHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  teamTitleWrap: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-  },
-  memberBadge: {
-    fontSize: "11px",
-    fontWeight: "700",
-    backgroundColor: "#e5e7eb",
-    color: "#374151",
-    padding: "1px 7px",
-    borderRadius: "999px",
-  },
-  manageTeamBtn: {
-    background: "none",
-    border: "none",
-    color: "#2563eb",
-    fontSize: "12px",
-    fontWeight: "600",
-    cursor: "pointer",
-    padding: 0,
-  },
-  teamHint: {
-    fontSize: "11px",
-    color: "#9ca3af",
-    margin: "-6px 0 0 0",
-  },
-  membersList: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
-    maxHeight: "260px",
-    overflowY: "auto",
-  },
-  memberRow: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    padding: "8px 10px",
-    borderRadius: "8px",
-    backgroundColor: "#ffffff",
-    border: "1px solid #f3f4f6",
-    cursor: "pointer",
-    transition: "all 0.15s ease",
-  },
-  activeMemberRow: {
-    backgroundColor: "#eff6ff",
-    borderColor: "#93c5fd",
-  },
-  avatar: {
-    width: "32px",
-    height: "32px",
-    borderRadius: "50%",
-    backgroundColor: "#e0e7ff",
-    color: "#4338ca",
-    fontWeight: "700",
-    fontSize: "12px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  allAvatar: {
-    width: "32px",
-    height: "32px",
-    borderRadius: "50%",
-    backgroundColor: "#f3f4f6",
-    fontSize: "14px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  memberMeta: {
-    display: "flex",
-    flexDirection: "column",
-    flex: 1,
-    minWidth: 0,
-  },
-  memberNameRow: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: "4px",
-  },
-  memberName: {
-    fontSize: "13px",
-    fontWeight: "600",
-    color: "#111827",
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-  },
-  roleTag: {
-    fontSize: "10px",
-    padding: "1px 5px",
-    borderRadius: "4px",
-    backgroundColor: "#f3f4f6",
-    color: "#6b7280",
-    fontWeight: "600",
-  },
-  pmRoleTag: {
-    backgroundColor: "#dbeafe",
-    color: "#1d4ed8",
-  },
-  memberSub: {
-    fontSize: "11px",
-    color: "#6b7280",
-  },
-};

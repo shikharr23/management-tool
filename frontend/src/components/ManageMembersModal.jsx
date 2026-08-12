@@ -68,45 +68,56 @@ export default function ManageMembersModal({ projectId, onClose }) {
   };
 
   return (
-    <div style={styles.overlay}>
-      <div style={styles.modal}>
-        <div style={styles.header}>
-          <h2 style={styles.title}>Manage Project Members</h2>
-          <button style={styles.closeBtn} onClick={onClose}>
+    <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-[1000] p-4">
+      <div className="bg-white rounded-xl w-full max-w-[500px] max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col">
+        <div className="p-5 border-b border-gray-100 flex justify-between items-center">
+          <h2 className="m-0 text-xl font-bold text-gray-900">Manage Project Members</h2>
+          <button
+            type="button"
+            className="bg-transparent border-none text-[28px] cursor-pointer text-gray-400 hover:text-gray-700 leading-none p-1"
+            onClick={onClose}
+          >
             &times;
           </button>
         </div>
 
-        {error && <div style={styles.error}>{error}</div>}
+        {error && <div className="mx-5 mt-4 p-3 bg-red-100 text-red-500 rounded-md text-sm border border-red-200">{error}</div>}
 
-        <div style={styles.section}>
-          <h3 style={styles.sectionTitle}>Add Member</h3>
-          <form onSubmit={handleSearch} style={styles.searchForm}>
+        <div className="p-5 border-b border-gray-100">
+          <h3 className="m-0 mb-4 text-base font-semibold text-gray-700">Add Member</h3>
+          <form onSubmit={handleSearch} className="flex gap-2">
             <input
               type="email"
               placeholder="Search by email..."
               value={searchEmail}
               onChange={(e) => setSearchEmail(e.target.value)}
-              style={styles.input}
+              className="flex-1 py-2 px-3 rounded-md border border-gray-300 text-sm bg-white text-gray-900 focus:outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all"
             />
-            <button type="submit" className="primary" style={styles.searchBtn}>Search</button>
+            <button
+              type="submit"
+              className="py-2 px-4 bg-gray-900 text-white text-sm font-semibold rounded-md hover:bg-gray-800 transition-all cursor-pointer"
+            >
+              Search
+            </button>
           </form>
 
           {searchResults.length > 0 && (
-            <div style={styles.searchResults}>
+            <div className="mt-3 border border-gray-200 rounded-md max-h-[150px] overflow-y-auto divide-y divide-gray-200">
               {searchResults.map((user) => (
-                <div key={user._id} style={styles.searchItem}>
-                  <span>{user.email}</span>
+                <div key={user._id} className="flex justify-between items-center p-3 text-sm bg-white">
+                  <span className="text-gray-800">{user.email}</span>
                   <div>
                     <button 
+                      type="button"
                       onClick={() => handleAddMember(user._id, "member")}
-                      style={styles.addBtn}
+                      className="py-1 px-2.5 bg-emerald-500 text-white border-none rounded text-xs font-semibold hover:bg-emerald-600 cursor-pointer transition-colors"
                     >
                       Add as Member
                     </button>
                     <button 
+                      type="button"
                       onClick={() => handleAddMember(user._id, "projectManager")}
-                      style={{...styles.addBtn, marginLeft: "8px", backgroundColor: "#3b82f6"}}
+                      className="py-1 px-2.5 bg-blue-500 text-white border-none rounded text-xs font-semibold hover:bg-blue-600 cursor-pointer transition-colors ml-2"
                     >
                       Add as Manager
                     </button>
@@ -117,34 +128,35 @@ export default function ManageMembersModal({ projectId, onClose }) {
           )}
         </div>
 
-        <div style={styles.section}>
-          <h3 style={styles.sectionTitle}>Current Members</h3>
+        <div className="p-5">
+          <h3 className="m-0 mb-4 text-base font-semibold text-gray-700">Current Members</h3>
           {loading ? (
-            <p>Loading members...</p>
+            <p className="text-gray-500 text-sm">Loading members...</p>
           ) : members.length === 0 ? (
-            <p style={styles.noMembers}>No members yet.</p>
+            <p className="text-gray-400 italic text-sm">No members yet.</p>
           ) : (
-            <ul style={styles.memberList}>
+            <ul className="list-none p-0 m-0 flex flex-col gap-3">
               {members.map((member) => (
-                <li key={member.user._id || member.user} style={styles.memberItem}>
-                  <div style={styles.memberInfo}>
-                    <span style={styles.memberEmail}>{member.user.email || "Unknown Email"}</span>
-                    <span style={styles.memberRoleBadge(member.role)}>
+                <li key={member.user._id || member.user} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-sm font-medium text-gray-800">{member.user.email || "Unknown Email"}</span>
+                    <span className={member.role === "projectManager" ? "text-[11px] py-0.5 px-2 rounded-full bg-blue-100 text-blue-700 font-semibold w-fit" : "text-[11px] py-0.5 px-2 rounded-full bg-gray-200 text-gray-700 font-semibold w-fit"}>
                       {member.role === "projectManager" ? "Manager" : "Member"}
                     </span>
                   </div>
-                  <div style={styles.memberActions}>
+                  <div className="flex gap-2 items-center">
                     <select 
                       value={member.role}
                       onChange={(e) => handleUpdateRole(member.user._id, e.target.value)}
-                      style={styles.roleSelect}
+                      className="p-1 text-xs rounded border border-gray-300 bg-white text-gray-800"
                     >
                       <option value="member">Member</option>
                       <option value="projectManager">Manager</option>
                     </select>
                     <button 
+                      type="button"
                       onClick={() => handleRemoveMember(member.user._id)}
-                      style={styles.removeBtn}
+                      className="py-1 px-2.5 bg-red-500 text-white border-none rounded text-xs font-semibold hover:bg-red-600 cursor-pointer transition-colors"
                     >
                       Remove
                     </button>
@@ -158,162 +170,3 @@ export default function ManageMembersModal({ projectId, onClose }) {
     </div>
   );
 }
-
-const styles = {
-  overlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1000,
-  },
-  modal: {
-    backgroundColor: "white",
-    borderRadius: "12px",
-    width: "100%",
-    maxWidth: "500px",
-    maxHeight: "90vh",
-    overflowY: "auto",
-    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)",
-    display: "flex",
-    flexDirection: "column",
-  },
-  header: {
-    padding: "20px",
-    borderBottom: "1px solid #f0f0f0",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  title: {
-    margin: 0,
-    fontSize: "20px",
-    color: "#1a1a1a",
-  },
-  closeBtn: {
-    background: "none",
-    border: "none",
-    fontSize: "28px",
-    cursor: "pointer",
-    color: "#888",
-    lineHeight: 1,
-  },
-  error: {
-    margin: "16px 20px 0",
-    padding: "12px",
-    backgroundColor: "#fee2e2",
-    color: "#ef4444",
-    borderRadius: "6px",
-    fontSize: "14px",
-  },
-  section: {
-    padding: "20px",
-    borderBottom: "1px solid #f0f0f0",
-  },
-  sectionTitle: {
-    margin: "0 0 16px 0",
-    fontSize: "16px",
-    color: "#444",
-  },
-  searchForm: {
-    display: "flex",
-    gap: "8px",
-  },
-  input: {
-    flex: 1,
-    padding: "8px 12px",
-    borderRadius: "6px",
-    border: "1px solid #ddd",
-  },
-  searchBtn: {
-    padding: "8px 16px",
-  },
-  searchResults: {
-    marginTop: "12px",
-    border: "1px solid #eee",
-    borderRadius: "6px",
-    maxHeight: "150px",
-    overflowY: "auto",
-  },
-  searchItem: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "12px",
-    borderBottom: "1px solid #eee",
-    fontSize: "14px",
-  },
-  addBtn: {
-    padding: "4px 8px",
-    backgroundColor: "#10b981",
-    color: "white",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-    fontSize: "12px",
-  },
-  memberList: {
-    listStyle: "none",
-    padding: 0,
-    margin: 0,
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
-  },
-  memberItem: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "12px",
-    backgroundColor: "#f9fafb",
-    borderRadius: "8px",
-  },
-  memberInfo: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "4px",
-  },
-  memberEmail: {
-    fontSize: "14px",
-    fontWeight: "500",
-  },
-  memberRoleBadge: (role) => ({
-    fontSize: "11px",
-    padding: "2px 6px",
-    borderRadius: "12px",
-    backgroundColor: role === "projectManager" ? "#dbeafe" : "#e5e7eb",
-    color: role === "projectManager" ? "#1d4ed8" : "#4b5563",
-    display: "inline-block",
-    width: "fit-content",
-  }),
-  memberActions: {
-    display: "flex",
-    gap: "8px",
-    alignItems: "center",
-  },
-  roleSelect: {
-    padding: "4px",
-    fontSize: "12px",
-    borderRadius: "4px",
-    border: "1px solid #ddd",
-  },
-  removeBtn: {
-    padding: "4px 8px",
-    backgroundColor: "#ef4444",
-    color: "white",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-    fontSize: "12px",
-  },
-  noMembers: {
-    color: "#888",
-    fontStyle: "italic",
-    fontSize: "14px",
-  },
-};

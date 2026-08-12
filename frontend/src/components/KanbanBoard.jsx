@@ -27,21 +27,20 @@ function KanbanColumn({ status, title, color, tasks, onDeleteTask, onEditTask, o
   const taskIds = tasks.map((t) => String(t._id));
 
   return (
-    <div style={styles.column}>
-      <div style={{ ...styles.columnHeader, borderColor: color }}>
-        <h3 style={{ ...styles.columnTitle, color }}>{title}</h3>
-        <span style={styles.taskCount}>{tasks.length}</span>
+    <div className="bg-[#fafafa] rounded-[10px] p-5 border border-[#e8e8e8] flex flex-col">
+      <div className="flex justify-between items-center pb-[15px] mb-[15px] border-b-2" style={{ borderColor: color }}>
+        <h3 className="m-0 text-base font-bold" style={{ color }}>{title}</h3>
+        <span className="text-xs font-semibold text-gray-400 bg-white py-1 px-2.5 rounded-full min-w-[24px] text-center">{tasks.length}</span>
       </div>
       <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
         <div
           ref={setNodeRef}
-          style={{
-            ...styles.taskList,
-            ...(isOver ? styles.taskListOver : {}),
-          }}
+          className={`flex flex-col gap-3 flex-1 min-h-[300px] rounded-lg transition-colors duration-150 ${
+            isOver ? "bg-gray-200" : ""
+          }`}
         >
           {tasks.length === 0 ? (
-            <p style={styles.emptyColumn}>Drop tasks here</p>
+            <p className="text-gray-400 text-center py-10 px-5 text-sm flex-1 flex items-center justify-center pointer-events-none">Drop tasks here</p>
           ) : (
             tasks.map((task) => (
               <TaskCard
@@ -200,7 +199,7 @@ export default function KanbanBoard({
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <div className="kanban-board" style={styles.kanban}>
+      <div className="grid grid-cols-1 min-[900px]:grid-cols-3 gap-6 min-h-[calc(100vh-250px)] pb-10">
         {Object.entries(COLUMNS).map(([status, { title, color }]) => (
           <KanbanColumn
             key={status}
@@ -217,7 +216,7 @@ export default function KanbanBoard({
 
       <DragOverlay dropAnimation={null}>
         {activeTask ? (
-          <div style={styles.overlay}>
+          <div className="cursor-grabbing rotate-2">
             <TaskCard task={activeTask} onDelete={onDeleteTask} isOverlay />
           </div>
         ) : null}
@@ -225,68 +224,3 @@ export default function KanbanBoard({
     </DndContext>
   );
 }
-
-const styles = {
-  kanban: {
-    minHeight: "calc(100vh - 250px)",
-    paddingBottom: "40px",
-  },
-  column: {
-    backgroundColor: "#fafafa",
-    borderRadius: "10px",
-    padding: "20px",
-    border: "1px solid #e8e8e8",
-    display: "flex",
-    flexDirection: "column",
-  },
-  columnHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingBottom: "15px",
-    marginBottom: "15px",
-    borderBottom: "2px solid",
-  },
-  columnTitle: {
-    margin: 0,
-    fontSize: "16px",
-    fontWeight: "700",
-  },
-  taskCount: {
-    fontSize: "12px",
-    fontWeight: "600",
-    color: "#888888",
-    backgroundColor: "white",
-    padding: "4px 10px",
-    borderRadius: "12px",
-    minWidth: "24px",
-    textAlign: "center",
-  },
-  taskList: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
-    flex: 1,
-    minHeight: "300px",
-    borderRadius: "8px",
-    transition: "background-color 0.15s ease",
-  },
-  taskListOver: {
-    backgroundColor: "#f0f0f0",
-  },
-  emptyColumn: {
-    color: "#ccc",
-    textAlign: "center",
-    padding: "40px 20px",
-    fontSize: "14px",
-    flex: 1,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    pointerEvents: "none",
-  },
-  overlay: {
-    cursor: "grabbing",
-    transform: "rotate(2deg)",
-  },
-};

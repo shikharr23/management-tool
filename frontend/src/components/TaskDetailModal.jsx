@@ -38,72 +38,88 @@ export default function TaskDetailModal({ task, onClose }) {
   const overdue = isOverdue(task.dueDate);
 
   return (
-    <div style={styles.overlay} onClick={onClose}>
-      <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <div style={styles.header}>
-          <h2 style={styles.title}>{task.title}</h2>
-          <button style={styles.closeBtn} onClick={onClose}>✕</button>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000] p-4" onClick={onClose}>
+      <div className="bg-white rounded-lg w-full max-w-[600px] max-h-[90vh] flex flex-col shadow-lg overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="p-5 border-b border-gray-100 flex justify-between items-start">
+          <h2 className="m-0 text-xl font-bold text-gray-900">{task.title}</h2>
+          <button
+            type="button"
+            className="bg-transparent border-none text-xl cursor-pointer text-gray-500 hover:text-gray-800 transition-colors p-1 leading-none"
+            onClick={onClose}
+          >
+            ✕
+          </button>
         </div>
 
-        <div style={styles.details}>
-          <p style={styles.description}>{task.description || "No description provided."}</p>
+        <div className="p-5 border-b border-gray-100">
+          <p className="m-0 mb-5 text-gray-700 text-sm leading-relaxed">{task.description || "No description provided."}</p>
           
-          <div style={styles.meta}>
-            <div style={styles.metaItem}>
-              <strong>Status:</strong>
-              <span style={{ ...styles.badge, backgroundColor: getStatusColor(task.status) }}>
+          <div className="flex gap-5 flex-wrap">
+            <div className="flex items-center gap-2 text-sm text-gray-700">
+              <strong className="font-semibold">Status:</strong>
+              <span
+                className="text-white py-1 px-2.5 rounded text-xs font-bold capitalize"
+                style={{ backgroundColor: getStatusColor(task.status) }}
+              >
                 {task.status}
               </span>
             </div>
-            <div style={styles.metaItem}>
-              <strong>Priority:</strong>
-              <span style={{ ...styles.badge, backgroundColor: getPriorityColor(task.priority) }}>
+            <div className="flex items-center gap-2 text-sm text-gray-700">
+              <strong className="font-semibold">Priority:</strong>
+              <span
+                className="text-white py-1 px-2.5 rounded text-xs font-bold capitalize"
+                style={{ backgroundColor: getPriorityColor(task.priority) }}
+              >
                 {task.priority}
               </span>
             </div>
-            <div style={styles.metaItem}>
-              <strong>Due Date:</strong>
-              <span style={{ ...(overdue ? styles.overdueText : {}) }}>
+            <div className="flex items-center gap-2 text-sm text-gray-700">
+              <strong className="font-semibold">Due Date:</strong>
+              <span className={overdue ? "text-red-500 font-semibold" : "text-gray-600"}>
                 {formatDate(task.dueDate)} {overdue ? "(overdue)" : ""}
               </span>
             </div>
           </div>
         </div>
 
-        <div style={styles.commentsSection}>
-          <h3 style={styles.commentsTitle}>Comments</h3>
+        <div className="p-5 flex flex-col flex-1 overflow-hidden">
+          <h3 className="m-0 mb-3.5 text-base font-semibold text-gray-900">Comments</h3>
           
-          {error && <p style={styles.errorMsg}>{error}</p>}
+          {error && <p className="text-red-500 text-sm mb-2.5">{error}</p>}
           
-          <div style={styles.commentsList}>
+          <div className="flex-1 overflow-y-auto flex flex-col gap-3.5 mb-3.5 pr-2.5">
             {loading ? (
-              <p style={styles.loadingMsg}>Loading comments...</p>
+              <p className="text-gray-500 text-sm">Loading comments...</p>
             ) : comments.length === 0 ? (
-              <p style={styles.emptyMsg}>No comments yet.</p>
+              <p className="text-gray-400 text-sm italic">No comments yet.</p>
             ) : (
               comments.map((comment) => (
-                <div key={comment._id} style={styles.comment}>
-                  <div style={styles.commentHeader}>
-                    <strong>{comment.user.name}</strong>
-                    <span style={styles.commentTime}>
+                <div key={comment._id} className="bg-gray-50 p-3 rounded-md border border-gray-100">
+                  <div className="flex justify-between items-center mb-1.5 text-xs">
+                    <strong className="font-semibold text-gray-800">{comment.user.name}</strong>
+                    <span className="text-gray-400 text-xs">
                       {new Date(comment.createdAt).toLocaleString()}
                     </span>
                   </div>
-                  <p style={styles.commentText}>{comment.text}</p>
+                  <p className="m-0 text-sm text-gray-800 leading-relaxed">{comment.text}</p>
                 </div>
               ))
             )}
           </div>
 
-          <form onSubmit={handleAddComment} style={styles.commentForm}>
+          <form onSubmit={handleAddComment} className="flex gap-2.5 mt-auto pt-2">
             <input
               type="text"
               placeholder="Add a comment..."
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              style={styles.commentInput}
+              className="flex-1 py-2 px-3 border border-gray-300 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all"
             />
-            <button type="submit" className="primary" disabled={!newComment.trim()}>
+            <button
+              type="submit"
+              disabled={!newComment.trim()}
+              className="py-2 px-4 bg-gray-900 text-white text-sm font-semibold rounded-md hover:bg-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
               Post
             </button>
           </form>
@@ -112,149 +128,3 @@ export default function TaskDetailModal({ task, onClose }) {
     </div>
   );
 }
-
-const styles = {
-  overlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 1000,
-  },
-  modal: {
-    backgroundColor: "white",
-    borderRadius: "8px",
-    width: "100%",
-    maxWidth: "600px",
-    maxHeight: "90vh",
-    display: "flex",
-    flexDirection: "column",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-    overflow: "hidden",
-  },
-  header: {
-    padding: "20px",
-    borderBottom: "1px solid #f0f0f0",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-  },
-  title: {
-    margin: 0,
-    fontSize: "20px",
-    fontWeight: "700",
-    color: "#1a1a1a",
-  },
-  closeBtn: {
-    background: "none",
-    border: "none",
-    fontSize: "20px",
-    cursor: "pointer",
-    color: "#666",
-  },
-  details: {
-    padding: "20px",
-    borderBottom: "1px solid #f0f0f0",
-  },
-  description: {
-    margin: "0 0 20px 0",
-    color: "#444",
-    lineHeight: "1.5",
-  },
-  meta: {
-    display: "flex",
-    gap: "20px",
-    flexWrap: "wrap",
-  },
-  metaItem: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    fontSize: "14px",
-  },
-  badge: {
-    color: "white",
-    padding: "4px 10px",
-    borderRadius: "4px",
-    fontSize: "12px",
-    fontWeight: "700",
-    textTransform: "capitalize",
-  },
-  overdueText: {
-    color: "#ef4444",
-    fontWeight: "600",
-  },
-  commentsSection: {
-    padding: "20px",
-    display: "flex",
-    flexDirection: "column",
-    flex: 1,
-    overflow: "hidden",
-  },
-  commentsTitle: {
-    margin: "0 0 15px 0",
-    fontSize: "16px",
-    fontWeight: "600",
-  },
-  commentsList: {
-    flex: 1,
-    overflowY: "auto",
-    display: "flex",
-    flexDirection: "column",
-    gap: "15px",
-    marginBottom: "15px",
-    paddingRight: "10px",
-  },
-  comment: {
-    backgroundColor: "#f9f9f9",
-    padding: "12px",
-    borderRadius: "6px",
-  },
-  commentHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    marginBottom: "6px",
-    fontSize: "13px",
-  },
-  commentTime: {
-    color: "#888",
-    fontSize: "12px",
-  },
-  commentText: {
-    margin: 0,
-    fontSize: "14px",
-    color: "#333",
-    lineHeight: "1.4",
-  },
-  commentForm: {
-    display: "flex",
-    gap: "10px",
-    marginTop: "auto",
-  },
-  commentInput: {
-    flex: 1,
-    padding: "10px 12px",
-    border: "1px solid #ccc",
-    borderRadius: "4px",
-    fontSize: "14px",
-  },
-  loadingMsg: {
-    color: "#666",
-    fontSize: "14px",
-  },
-  emptyMsg: {
-    color: "#888",
-    fontSize: "14px",
-    fontStyle: "italic",
-  },
-  errorMsg: {
-    color: "#ef4444",
-    marginBottom: "10px",
-    fontSize: "14px",
-  },
-};

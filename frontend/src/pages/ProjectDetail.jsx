@@ -168,50 +168,64 @@ export default function ProjectDetail() {
     return true;
   });
 
-  if (loading) return <p style={styles.loading}>Loading...</p>;
-  if (!project) return <p style={styles.error}>Project not found</p>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-gray-500 font-medium">
+        Loading...
+      </div>
+    );
+  }
+
+  if (!project) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-red-500 font-medium">
+        Project not found
+      </div>
+    );
+  }
 
   return (
-    <div style={styles.page}>
+    <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div style={styles.layout}>
+      <div className="flex w-full max-w-[1800px] mx-auto">
         {/* Main Content Area */}
-        <main style={styles.mainContent}>
-          <div style={styles.header}>
-            <div style={styles.headerContent}>
+        <main className="flex-1 py-5 px-4 sm:px-[30px] pb-10 min-w-0">
+          <div className="flex justify-between items-start mb-6 gap-5 flex-wrap">
+            <div className="flex-1 min-w-[280px]">
               <button
-                className="secondary"
+                type="button"
                 onClick={() => navigate("/dashboard")}
-                style={styles.backBtn}
+                className="mb-3 text-[13px] py-2 px-3.5 bg-gray-100 text-gray-900 border border-gray-300 rounded-md hover:bg-gray-200 transition-all font-semibold cursor-pointer block"
               >
                 ← Back to Projects
               </button>
-              <h1 style={styles.title}>{project.name}</h1>
+              <h1 className="text-[28px] font-extrabold text-gray-900 mb-1.5 tracking-tight">{project.name}</h1>
               {project.description && (
-                <p style={styles.description}>{project.description}</p>
+                <p className="text-gray-600 text-sm leading-relaxed m-0">{project.description}</p>
               )}
             </div>
 
-            <div style={styles.headerActions}>
+            <div className="flex gap-2.5 items-center flex-wrap">
               <button
-                className="secondary"
+                type="button"
                 onClick={() => setIsSidebarOpen((prev) => !prev)}
-                style={styles.sidebarToggleBtn}
+                className="py-2 px-3.5 text-[13px] font-semibold bg-gray-100 text-gray-900 border border-gray-300 rounded-md hover:bg-gray-200 transition-all cursor-pointer"
                 title="Toggle Sidebar"
               >
                 {isSidebarOpen ? "Hide Hub 📊" : "Show Hub 📊"}
               </button>
 
               <button
-                className="secondary"
+                type="button"
                 onClick={() => setShowMembersModal(true)}
-                style={styles.manageBtn}
+                className="py-2 px-3.5 text-[13px] font-semibold bg-gray-100 text-gray-900 border border-gray-300 rounded-md hover:bg-gray-200 transition-all cursor-pointer"
               >
                 👥 Members ({members.length})
               </button>
 
               <button
-                className="primary"
+                type="button"
+                className="py-2.5 px-5 bg-gray-900 text-white text-sm font-semibold rounded-md hover:bg-gray-800 hover:-translate-y-px hover:shadow-md transition-all cursor-pointer"
                 onClick={() => {
                   if (showTaskForm && !editingTaskId) {
                     resetForm();
@@ -229,17 +243,18 @@ export default function ProjectDetail() {
 
           {/* Active Filter Pill indicator if any filter applied */}
           {(searchQuery || selectedPriority !== "all" || selectedAssignee !== null) && (
-            <div style={styles.filterBanner}>
-              <span style={styles.filterBannerText}>
+            <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg py-2.5 px-4 mb-5">
+              <span className="text-[13px] text-blue-900">
                 Showing <strong>{filteredTasks.length}</strong> of {tasks.length} tasks matching filters
               </span>
               <button
+                type="button"
                 onClick={() => {
                   setSearchQuery("");
                   setSelectedPriority("all");
                   setSelectedAssignee(null);
                 }}
-                style={styles.clearAllFiltersBtn}
+                className="bg-transparent border-none text-blue-600 text-xs font-bold cursor-pointer underline hover:text-blue-800"
               >
                 Clear all filters
               </button>
@@ -247,12 +262,12 @@ export default function ProjectDetail() {
           )}
 
           {showTaskForm && (
-            <form onSubmit={handleSubmitTask} style={styles.form}>
-              <h2 style={styles.formTitle}>
+            <form onSubmit={handleSubmitTask} className="bg-white p-6 rounded-xl mb-[30px] flex flex-col gap-4 border border-gray-200 shadow-xs">
+              <h2 className="text-lg font-semibold text-gray-900 m-0">
                 {editingTaskId ? "Edit Task" : "New Task"}
               </h2>
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Task Title</label>
+              <div className="flex flex-col gap-1.5 flex-1">
+                <label className="text-[13px] font-semibold text-gray-700">Task Title</label>
                 <input
                   type="text"
                   placeholder="Enter task title"
@@ -261,28 +276,30 @@ export default function ProjectDetail() {
                     setFormData({ ...formData, title: e.target.value })
                   }
                   required
+                  className="w-full p-3 border border-gray-200 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all"
                 />
               </div>
 
-              <div style={styles.formRow}>
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Description</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5 flex-1">
+                  <label className="text-[13px] font-semibold text-gray-700">Description</label>
                   <textarea
                     placeholder="Enter task description"
                     value={formData.description}
                     onChange={(e) =>
                       setFormData({ ...formData, description: e.target.value })
                     }
-                    style={styles.textarea}
+                    className="w-full p-3 border border-gray-200 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all min-h-[70px] resize-y"
                   />
                 </div>
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Priority</label>
+                <div className="flex flex-col gap-1.5 flex-1">
+                  <label className="text-[13px] font-semibold text-gray-700">Priority</label>
                   <select
                     value={formData.priority}
                     onChange={(e) =>
                       setFormData({ ...formData, priority: e.target.value })
                     }
+                    className="w-full p-3 border border-gray-200 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all"
                   >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
@@ -291,14 +308,15 @@ export default function ProjectDetail() {
                 </div>
               </div>
 
-              <div style={styles.formRow}>
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Assign Member</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5 flex-1">
+                  <label className="text-[13px] font-semibold text-gray-700">Assign Member</label>
                   <select
                     value={formData.assignedTo}
                     onChange={(e) =>
                       setFormData({ ...formData, assignedTo: e.target.value })
                     }
+                    className="w-full p-3 border border-gray-200 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all"
                   >
                     <option value="">Unassigned</option>
                     {members.map((m) => {
@@ -312,30 +330,38 @@ export default function ProjectDetail() {
                   </select>
                 </div>
 
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Due Date</label>
+                <div className="flex flex-col gap-1.5 flex-1">
+                  <label className="text-[13px] font-semibold text-gray-700">Due Date</label>
                   <input
                     type="date"
                     value={formData.dueDate}
                     onChange={(e) =>
                       setFormData({ ...formData, dueDate: e.target.value })
                     }
+                    className="w-full p-3 border border-gray-200 rounded-md text-sm bg-white text-gray-900 focus:outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 transition-all"
                   />
                 </div>
               </div>
 
-              <div style={styles.formButtons}>
-                <button type="submit" className="primary">
+              <div className="flex gap-3 mt-2">
+                <button
+                  type="submit"
+                  className="py-2.5 px-5 bg-gray-900 text-white text-sm font-semibold rounded-md hover:bg-gray-800 hover:-translate-y-px hover:shadow-md transition-all cursor-pointer"
+                >
                   {editingTaskId ? "Save Changes" : "Create Task"}
                 </button>
-                <button type="button" className="secondary" onClick={resetForm}>
+                <button
+                  type="button"
+                  className="py-2.5 px-5 text-sm font-semibold bg-gray-100 text-gray-900 border border-gray-300 rounded-md hover:bg-gray-200 transition-all cursor-pointer"
+                  onClick={resetForm}
+                >
                   Cancel
                 </button>
               </div>
             </form>
           )}
 
-          {error && <p style={styles.errorMsg}>{error}</p>}
+          {error && <p className="text-red-500 py-3 px-4 bg-red-100 rounded-md mb-5 text-sm border border-red-200">{error}</p>}
 
           <KanbanBoard
             tasks={filteredTasks}
@@ -383,150 +409,3 @@ export default function ProjectDetail() {
     </div>
   );
 }
-
-const styles = {
-  page: {
-    minHeight: "100vh",
-    backgroundColor: "#f9fafb",
-  },
-  layout: {
-    display: "flex",
-    width: "100%",
-    maxWidth: "1800px",
-    margin: "0 auto",
-  },
-  mainContent: {
-    flex: 1,
-    padding: "20px 30px 40px 30px",
-    minWidth: 0,
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: "24px",
-    gap: "20px",
-    flexWrap: "wrap",
-  },
-  headerContent: {
-    flex: 1,
-    minWidth: "280px",
-  },
-  headerActions: {
-    display: "flex",
-    gap: "10px",
-    alignItems: "center",
-    flexWrap: "wrap",
-  },
-  manageBtn: {
-    padding: "10px 14px",
-    fontSize: "13px",
-  },
-  sidebarToggleBtn: {
-    padding: "10px 14px",
-    fontSize: "13px",
-  },
-  backBtn: {
-    marginBottom: "12px",
-    fontSize: "13px",
-  },
-  title: {
-    fontSize: "28px",
-    fontWeight: "800",
-    margin: "0 0 6px 0",
-    color: "#111827",
-    letterSpacing: "-0.02em",
-  },
-  description: {
-    color: "#4b5563",
-    fontSize: "14px",
-    margin: 0,
-    lineHeight: "1.5",
-  },
-  filterBanner: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#eff6ff",
-    border: "1px solid #bfdbfe",
-    borderRadius: "8px",
-    padding: "10px 16px",
-    marginBottom: "20px",
-  },
-  filterBannerText: {
-    fontSize: "13px",
-    color: "#1e40af",
-  },
-  clearAllFiltersBtn: {
-    background: "none",
-    border: "none",
-    color: "#2563eb",
-    fontSize: "12px",
-    fontWeight: "700",
-    cursor: "pointer",
-    textDecoration: "underline",
-  },
-  formTitle: {
-    fontSize: "18px",
-    fontWeight: "600",
-    margin: 0,
-    color: "#1a1a1a",
-  },
-  form: {
-    backgroundColor: "white",
-    padding: "24px",
-    borderRadius: "12px",
-    marginBottom: "30px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px",
-    border: "1px solid #e5e7eb",
-    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
-  },
-  formGroup: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
-    flex: 1,
-  },
-  formRow: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "16px",
-  },
-  label: {
-    fontSize: "13px",
-    fontWeight: "600",
-    color: "#374151",
-  },
-  textarea: {
-    minHeight: "70px",
-    resize: "vertical",
-  },
-  formButtons: {
-    display: "flex",
-    gap: "12px",
-    marginTop: "8px",
-  },
-  errorMsg: {
-    color: "#ef4444",
-    padding: "12px 16px",
-    backgroundColor: "#fee2e2",
-    borderRadius: "6px",
-    marginBottom: "20px",
-    fontSize: "14px",
-    border: "1px solid #fecaca",
-  },
-  loading: {
-    textAlign: "center",
-    padding: "60px 20px",
-    color: "#888888",
-    fontSize: "16px",
-  },
-  error: {
-    color: "#ef4444",
-    textAlign: "center",
-    padding: "60px 20px",
-    fontSize: "16px",
-  },
-};

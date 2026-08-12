@@ -5,13 +5,16 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import ProjectDetail from "./pages/ProjectDetail";
-import "./styles/global.css";
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <div style={{ textAlign: "center", padding: "40px" }}>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen text-gray-500 font-medium">
+        Loading...
+      </div>
+    );
   }
 
   return user ? children : <Navigate to="/login" replace />;
@@ -21,7 +24,11 @@ function PublicRoute({ children }) {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <div style={{ textAlign: "center", padding: "40px" }}>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen text-gray-500 font-medium">
+        Loading...
+      </div>
+    );
   }
 
   return user ? <Navigate to="/dashboard" replace /> : children;

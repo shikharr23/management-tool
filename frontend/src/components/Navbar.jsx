@@ -11,14 +11,23 @@ export default function Navbar() {
   };
 
   return (
-    <nav style={styles.navbar}>
-      <div style={styles.container}>
-        <h2 style={styles.logo} onClick={() => navigate("/dashboard")}>
+    <nav className="bg-white border-b border-gray-200 py-4 mb-10 shadow-xs">
+      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-8 flex justify-between items-center">
+        <h2
+          className="text-[22px] font-bold cursor-pointer text-gray-900 tracking-tight"
+          onClick={() => navigate("/dashboard")}
+        >
           Project Manager
         </h2>
-        <div style={styles.right}>
-          {user?.name && <span style={styles.userName}>{user.name}</span>}
-          <button className="secondary" onClick={handleLogout}>
+        <div className="flex items-center gap-4">
+          {user?.name && (
+            <span className="text-sm text-gray-600 font-medium">{user.name}</span>
+          )}
+          <button
+            type="button"
+            className="px-4 py-2 text-sm font-semibold bg-gray-100 text-gray-900 border border-gray-300 rounded-md hover:bg-gray-200 hover:border-gray-400 transition-all cursor-pointer"
+            onClick={handleLogout}
+          >
             Logout
           </button>
         </div>
@@ -26,38 +35,3 @@ export default function Navbar() {
     </nav>
   );
 }
-
-const styles = {
-  navbar: {
-    backgroundColor: "white",
-    borderBottom: "1px solid #e0e0e0",
-    padding: "16px 0",
-    marginBottom: "40px",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
-  },
-  container: {
-    width: "100%",
-    maxWidth: "1600px",
-    margin: "0 auto",
-    padding: "0 30px",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  logo: {
-    fontSize: "22px",
-    fontWeight: "700",
-    cursor: "pointer",
-    color: "#1a1a1a",
-  },
-  right: {
-    display: "flex",
-    alignItems: "center",
-    gap: "16px",
-  },
-  userName: {
-    fontSize: "14px",
-    color: "#666666",
-    fontWeight: "500",
-  },
-};
