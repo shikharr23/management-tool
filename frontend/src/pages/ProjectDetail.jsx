@@ -21,6 +21,9 @@ export default function ProjectDetail() {
   const [project, setProject] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [members, setMembers] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showTaskForm, setShowTaskForm] = useState(false);
@@ -39,20 +42,36 @@ export default function ProjectDetail() {
     setViewingTask(task);
   };
 
+  const fetchStats = useCallback(async () => {
+    try {
+      setStatsError(null);
+      const data = await projectService.getStats(projectId);
+      setStats(data);
+    } catch (err) {
+      setStatsError(err.message || "Failed to load analytics");
+    }
+  }, [projectId]);
+
   const fetchProjectAndTasks = useCallback(async () => {
     try {
-      const [projectData, taskResponse, membersResponse] = await Promise.all([
+      const [projectData, taskResponse, membersResponse, statsData] = await Promise.all([
         projectService.getById(projectId),
         taskService.getAll({ projectId, limit: 200, sortBy: "order", order: "asc" }),
         projectService.getMembers(projectId).catch(() => ({ members: [] })),
+        projectService.getStats(projectId).catch((err) => {
+          setStatsError(err.message || "Failed to load analytics");
+          return null;
+        }),
       ]);
       setProject(projectData);
       setTasks(taskResponse.tasks || []);
       setMembers(membersResponse.members || []);
+      if (statsData) setStats(statsData);
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
+      setStatsLoading(false);
     }
   }, [projectId]);
 
@@ -101,7 +120,7 @@ export default function ProjectDetail() {
     }
   };
 
-  const handleReorderTasks = async (updates) => {
+  const handleReorderTasks = async (updates, hasCrossColumnMove = false) => {
     setTasks((prevTasks) => {
       const updateMap = new Map(updates.map((u) => [String(u._id), u]));
       return prevTasks
@@ -116,6 +135,9 @@ export default function ProjectDetail() {
 
     try {
       await taskService.reorder(projectId, updates);
+      if (hasCrossColumnMove) {
+        fetchStats();
+      }
     } catch (err) {
       setError(err.message);
       fetchProjectAndTasks();
@@ -128,6 +150,7 @@ export default function ProjectDetail() {
       setTasks((prev) =>
         prev.map((t) => (t._id === taskId ? { ...t, ...updatedData } : t))
       );
+      fetchStats();
     } catch (err) {
       setError(err.message);
       fetchProjectAndTasks();
@@ -139,6 +162,7 @@ export default function ProjectDetail() {
     try {
       await taskService.delete(taskId);
       setTasks((prev) => prev.filter((t) => t._id !== taskId));
+      fetchStats();
     } catch (err) {
       setError(err.message);
     }
@@ -395,6 +419,10 @@ export default function ProjectDetail() {
           project={project}
           members={members}
           tasks={tasks}
+          stats={stats}
+          statsLoading={statsLoading}
+          statsError={statsError}
+          onRetryStats={fetchStats}
           selectedAssignee={selectedAssignee}
           onSelectAssignee={setSelectedAssignee}
           searchQuery={searchQuery}

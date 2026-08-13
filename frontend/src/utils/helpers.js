@@ -20,6 +20,7 @@ export const getStatusColor = (status) => {
   const colors = {
     todo: "#6b7280",
     "in-progress": "#3b82f6",
+    review: "#6366f1",
     completed: "#10b981",
   };
   return colors[status] || "#6b7280";

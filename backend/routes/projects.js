@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import express from "express";
 import Project from "../models/Project.js";
 import Task from "../models/Task.js";
@@ -31,6 +32,90 @@ projectRoute.get("/", authMiddleware, async (req, res) => {
     $or: [{ owner: req.user.id }, { "members.user": req.user.id }],
   }).sort({ updatedAt: -1 });
   res.status(200).json(projects);
+});
+
+projectRoute.get("/:id/stats", authMiddleware, authorizeProject([]), async (req, res) => {
+  const projectId = req.project._id;
+  const now = new Date();
+  const inThreeDays = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+
+  const [rawStats] = await Task.aggregate([
+    { $match: { project: projectId } },
+    {
+      $facet: {
+        total: [{ $count: "count" }],
+        byStatus: [{ $group: { _id: "$status", count: { $sum: 1 } } }],
+        byPriority: [{ $group: { _id: "$priority", count: { $sum: 1 } } }],
+        overdue: [
+          {
+            $match: {
+              status: { $ne: "completed" },
+              dueDate: { $exists: true, $ne: null, $lte: now },
+            },
+          },
+          { $count: "count" },
+        ],
+        dueSoon: [
+          {
+            $match: {
+              status: { $ne: "completed" },
+              dueDate: { $exists: true, $ne: null, $gt: now, $lte: inThreeDays },
+            },
+          },
+          { $count: "count" },
+        ],
+        memberWorkload: [
+          { $group: { _id: "$assignedTo", count: { $sum: 1 } } },
+        ],
+      },
+    },
+  ]);
+
+  const totalTasks = rawStats?.total?.[0]?.count || 0;
+
+  const byStatus = {
+    todo: 0,
+    "in-progress": 0,
+    review: 0,
+    completed: 0,
+  };
+  (rawStats?.byStatus || []).forEach((item) => {
+    if (item._id && byStatus[item._id] !== undefined) {
+      byStatus[item._id] = item.count;
+    }
+  });
+
+  const byPriority = {
+    low: 0,
+    medium: 0,
+    high: 0,
+  };
+  (rawStats?.byPriority || []).forEach((item) => {
+    if (item._id && byPriority[item._id] !== undefined) {
+      byPriority[item._id] = item.count;
+    }
+  });
+
+  const completedTasks = byStatus.completed;
+  const completionRate = totalTasks > 0 ? Number(((completedTasks / totalTasks) * 100).toFixed(1)) : 0;
+  const overdueCount = rawStats?.overdue?.[0]?.count || 0;
+  const dueSoonCount = rawStats?.dueSoon?.[0]?.count || 0;
+
+  const memberWorkload = (rawStats?.memberWorkload || []).map((item) => ({
+    userId: item._id ? item._id.toString() : null,
+    count: item.count,
+  }));
+
+  res.status(200).json({
+    totalTasks,
+    completedTasks,
+    completionRate,
+    byStatus,
+    byPriority,
+    overdueCount,
+    dueSoonCount,
+    memberWorkload,
+  });
 });
 
 projectRoute.get("/:id", authMiddleware, async (req, res) => {

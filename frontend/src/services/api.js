@@ -154,6 +154,7 @@ export const projectService = {
     apiCall(`/project/${id}/members/${userId}`, {
       method: "DELETE",
     }),
+  getStats: (id) => apiCall(`/project/${id}/stats`),
 };
 
 export const taskService = {

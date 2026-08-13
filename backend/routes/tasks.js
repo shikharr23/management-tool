@@ -270,7 +270,7 @@ taskRoute.get("/:id/comments", authMiddleware, async (req, res) => {
   }
 
   const comments = await Comment.find({ task: task._id })
-    .populate("user", "name email")
+    .populate("user", "email profile")
     .sort({ createdAt: 1 });
 
   res.status(200).json(comments);
@@ -303,7 +303,7 @@ taskRoute.post("/:id/comments", authMiddleware, async (req, res) => {
   });
 
   await comment.save();
-  await comment.populate("user", "name email");
+  await comment.populate("user", "email profile");
 
   res.status(201).json(comment);
 });

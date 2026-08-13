@@ -19,6 +19,7 @@ import TaskCard from "./TaskCard";
 const COLUMNS = {
   todo: { title: "Todo", color: "#888888" },
   "in-progress": { title: "In Progress", color: "#1a1a1a" },
+  review: { title: "Review", color: "#6366f1" },
   completed: { title: "Completed", color: "#10b981" },
 };
 
@@ -131,7 +132,7 @@ export default function KanbanBoard({
       }));
 
       if (onReorderTasks) {
-        onReorderTasks(updates);
+        onReorderTasks(updates, false);
       } else if (onUpdateTask) {
         onUpdateTask(draggedTask._id, { order: newIndex });
       }
@@ -178,7 +179,7 @@ export default function KanbanBoard({
     const updates = [...sourceUpdates, ...destUpdates];
 
     if (onReorderTasks) {
-      onReorderTasks(updates);
+      onReorderTasks(updates, true);
     } else if (onUpdateTask) {
       onUpdateTask(draggedTask._id, {
         status: destinationStatus,
@@ -199,7 +200,7 @@ export default function KanbanBoard({
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <div className="grid grid-cols-1 min-[900px]:grid-cols-3 gap-6 min-h-[calc(100vh-250px)] pb-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 min-[1200px]:grid-cols-4 gap-5 min-h-[calc(100vh-250px)] pb-10">
         {Object.entries(COLUMNS).map(([status, { title, color }]) => (
           <KanbanColumn
             key={status}

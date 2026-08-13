@@ -96,7 +96,9 @@ export default function TaskDetailModal({ task, onClose }) {
               comments.map((comment) => (
                 <div key={comment._id} className="bg-gray-50 p-3 rounded-md border border-gray-100">
                   <div className="flex justify-between items-center mb-1.5 text-xs">
-                    <strong className="font-semibold text-gray-800">{comment.user.name}</strong>
+                    <strong className="font-semibold text-gray-800">
+                      {comment.user?.profile?.username || comment.user?.email || "User"}
+                    </strong>
                     <span className="text-gray-400 text-xs">
                       {new Date(comment.createdAt).toLocaleString()}
                     </span>

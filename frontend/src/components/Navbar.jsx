@@ -20,8 +20,10 @@ export default function Navbar() {
           Project Manager
         </h2>
         <div className="flex items-center gap-4">
-          {user?.name && (
-            <span className="text-sm text-gray-600 font-medium">{user.name}</span>
+          {(user?.profile?.username || user?.email) && (
+            <span className="text-sm text-gray-600 font-medium">
+              {user.profile?.username || user.email}
+            </span>
           )}
           <button
             type="button"
