@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import ProjectDetail from "./pages/ProjectDetail";
+import Landing from "./pages/Landing";
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -40,6 +41,14 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route
+            path="/"
+            element={
+              <PublicRoute>
+                <Landing />
+              </PublicRoute>
+            }
+          />
+          <Route
             path="/login"
             element={
               <PublicRoute>
@@ -71,7 +80,8 @@ function App() {
               </PrivateRoute>
             }
           />
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          {/* Catch-all unknown routes fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
     </Router>
